@@ -1,0 +1,121 @@
+#!/bin/sh
+#
+# remoterun.cluster
+#
+# Run tasks on servers. This script will execute a command (or commands) on
+# the server with least load on the given server pool. If more than one 
+# server has load below a given load thershold, those servers are considered
+# to be equal and the actual server is randomly decided amongst that server
+# pool. 
+#
+# Servers are defined in $HOME/etc/servers_CLUSTERNAME.conf, and from that
+# file script $HOME/bin/get_fload.sh will fetch the load statistics of
+# each server which this script will use.
+#
+# For more information see wiki TIH:huruakka.
+# 
+# $1 remote server
+# $* command 
+#
+# partio/20121108
+
+DATE=$(date +"%d.%m.%Y %H:%M:%S")
+MYNAME=$(basename $0)
+
+if [ $# -lt 3 ]; then
+  echo "usage: $0 USER CLUSTER [ REMOTE_SERVER ] COMMAND"
+  exit
+fi
+
+# Load threshold; all servers that have load less than this are 
+# considered to be equal
+LOAD_THRESHOLD=0.10
+
+# Get user name
+JOBUSER=$1
+shift
+
+# Get cluster name
+CLUSTER=$1
+shift
+
+LOG=$HOME/log/remoterun_$CLUSTER.log
+SERVERS=$HOME/etc/servers_$CLUSTER.status
+
+echo "$MYNAME starting"
+
+# If 3rd argument is server name and it is not disabled
+# by commenting it out, use it
+
+isserver=`egrep -v '^#' $SERVERS | grep -wc "$1"`
+
+if [ $isserver -eq 1 ]; then
+  SERVER=$1
+  shift
+
+  echo "$SERVER <--- this server forced"
+else
+
+  # This variable will hold the server we are going to user
+  SERVER=""
+
+  content=$(egrep -v '^#' $SERVERS)
+
+  # All servers with load below LOAD_THRESHOLD
+  POTENTIAL_SERVERS=""
+
+  echo "Servers: "
+  
+  while read -r line; do
+
+    CUR_SERVER=$(echo $line | cut -d ' ' -f 1)
+    CUR_LOAD=$(echo $line | cut -d ' ' -f 2)
+
+    if [ "$CUR_LOAD" = "unavailable" ]; then
+      continue
+    fi
+ 
+    # Select first server since it hast the least load,
+    # this server is used if no servers are below LOAD_THRESHOLD
+
+    if [ -z "$SERVER" ]; then
+      SERVER=$CUR_SERVER
+    fi
+
+    if [ $(echo "$CUR_LOAD < $LOAD_THRESHOLD" | bc) -eq 1 ]; then
+      POTENTIAL_SERVERS="$CUR_SERVER\n$POTENTIAL_SERVERS"
+      echo "* $CUR_SERVER $CUR_LOAD below load threshold ($LOAD_THRESHOLD)"
+      continue
+    fi
+
+    echo "* $CUR_SERVER $CUR_LOAD"
+    
+  done <<< "$content"
+ 
+  if [ -n "$POTENTIAL_SERVERS" ]; then
+    SERVER=`echo -ne $POTENTIAL_SERVERS | shuf -n 1`
+  fi
+ 
+  if [ -z "$SERVER" ]; then
+    echo "$MYNAME: no valid servers defined in $SERVERS"
+    exit 1
+  fi
+
+  echo "$SERVER <--- choosing this server"
+
+fi
+
+echo -e "$MYNAME starting job\n"
+
+ssh -4x $SERVER -l $JOBUSER $*
+
+ret=$?
+
+if [ $ret -eq 0 ]; then
+  echo "$DATE OK: $JOBUSER@$SERVER $*" >> $LOG
+else
+  echo "$DATE FAIL: $JOBUSER@$SERVER $*" >> $LOG
+fi
+
+exit $ret
+

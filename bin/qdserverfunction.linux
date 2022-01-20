@@ -1,0 +1,171 @@
+#!/bin/sh
+%manual
+#
+#  FMI/partio   11.10.2013     qdserverfunction.linux    Original 22.8.2012
+#
+#--------------------- R U T I I N I N   K U V A U S ------------------------
+#
+# Kaynnistetaan qdserver.sh, joka on valittaa QueryData Serverille
+# kutsussa maaritellyn palvelupyynnon
+#
+#------------------------- P A R A M E T R I T ----------------------------- 
+#
+# Pathname     - Mika ajoketju kaynnistetaan serverilla, tiedostopolun nimi
+# PostProc     - Mika QueryDataServer palvelu kaynnistetaan
+#    
+#--------------------- QueryDataServer PostProcit ------------------------------
+#
+# GetData         - Hakee datat, joiden laatua tutkitaan.
+# Convert2Product - Jos laatu oli OK, tuotetaan varsinaiset tuotteet.
+# Distribute      - Tuotteen lahetys, tulostus
+#
+#--------------------- E R R O R - T I L A N T E E T ------------------------
+#
+# Yhteys vastuuhenkiloon (Pitaisi loytya suiten manuaalista tai wikista):
+# Koko tuotantotiimi tietaa myos jotain (tih.oper: JW, MA, MP, EN)
+#
+# https://wiki.fmi.fi/display/PROD/ecFlow-suitet
+#============================================================================
+%end
+
+set -e # stop the shell on first error
+set -u # fail when using an undefined variable
+set -x # echo script lines as they are executed
+
+
+# Defines the variables that are needed for any communication with ECF
+export ECF_PORT=%ECF_PORT%    # The server port number
+export ECF_NODE=%ECF_NODE%    # The name of ecf host that issued this task
+export ECF_NAME=%ECF_NAME%    # The name of this current task
+export ECF_PASS=%ECF_PASS%    # A unique password
+export ECF_TRYNO=%ECF_TRYNO%  # Current try number of the task
+export ECF_RID=$$
+
+# Tell ecFlow we have started
+ecflow_client --init=$$
+
+date
+
+echo "|=============================|"
+
+pathname=%PathName%
+
+if [ -z "$pathname" ]; then
+	echo "PathName not set"
+	exit 1
+fi
+
+postproc=$(echo %PostProc% | tr '[:upper:]' '[:lower:]')
+
+if [ -z "$postproc" ]; then
+        echo "postproc not set"
+        exit 1
+fi
+
+filenamemask=%FileNameMask%
+
+if [ -z "$filenamemask" ]; then
+	filenamemask="none"
+fi
+
+cluster="%cluster:huruakka%"
+
+use_pgcldb=%UsePG:USE_CLDB=1%
+use_oc=%USE_OC:0%
+
+echo "$(date +'%%Y-%%m-%%d %%H:%%M:%%S') USE_OC=$use_oc $pathname $postproc" >> /tmp/qdserverfunction-use_oc.log
+
+start_oc() {
+
+  if [ "$use_pgcldb" = "USE_CLDB=1" ]; then
+    use_pgcldb=0
+  elif [ "$use_pgcldb" = "USE_PGCLDB=1" ]; then
+    use_pgcldb=1
+  fi
+ 
+  ocpathname=${pathname//\//-} # to dashes
+  uspathname="${ocpathname//_}" # remove underscore
+
+  # a valid label must be an empty string or consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyValue',  or 'my_value',  or '12345')
+  # openshift only allows 63 characters
+  lcpathname=$(echo $uspathname | tr '[:upper:]' '[:lower:]' | tr -d '.' | head -c 63 | sed 's/[-_]$//')
+
+  job=$(echo "$lcpathname-$postproc" | tr -d '.' | head -c 63 | sed 's/[_-]$//')
+
+  oc delete --ignore-not-found=true job/$job
+  oc process -p RUN_IDENTIFIER=$job \
+	-p POSTPROC=$postproc \
+	-p FILENAMEMASK=$filenamemask \
+ 	-p PATHNAME=$pathname \
+	-p VERSION=prod \
+        -p QUERYBASE_IDENTIFIER=$lcpathname \
+        -p USE_PGCLDB=$use_pgcldb \
+	qdservertask-template | oc create -f -
+  
+  if [ $? -ne 0 ]; then
+    echo "creating job failed"
+    exit 1
+  fi
+
+  set +e
+  /ecflow/bin/oc-wait.sh $job --timeout=1200s
+  ret=$?
+  set -e  
+
+  oc logs job/$job
+
+  if [ $ret -eq 0 ]; then
+    echo "job $job has finished successfully"
+  else
+    echo "job $job has failed"
+    podname=$(oc get pods -l job-name=$job -o jsonpath='{.items[*].metadata.name}')
+    status=$(oc get pod $podname -o jsonpath='{.status.containerStatuses[0].state.waiting.reason}')
+    exit 1
+  fi
+
+}
+
+if [ $use_oc -eq 0 ]; then
+
+  # start runs in 'old' huruakka cluster, the one with physical machines
+
+  sh remoterun.cluster.exec fmi_prod $cluster /huruakka/bin/storetime.sh $pathname %TASK% start %ECF_DATE% %FAMILY1%
+  sh remoterun.cluster.exec fmi_prod $cluster $use_pgcldb ORACLE_CURSOR_SHARING=Y qdserver.sh -q $postproc -m "$filenamemask" $pathname
+  sh remoterun.cluster.exec fmi_prod $cluster /huruakka/bin/storetime.sh $pathname %TASK% stop %ECF_DATE% %FAMILY1%
+
+else
+
+  # start runs in openshift
+
+  export KUBECONFIG=$(kubeprompt -t)
+
+  if [ -n "$OPENSHIFT_TOKEN" ]; then
+    echo "openshift token missing (env variable OPENSHIFT_TOKEN)"
+    exit 1
+  fi
+
+  oc login -n huruakka --token $OPENSHIFT_TOKEN https://api.ocd.fmi.fi:6443
+
+  set -x
+
+  start_oc
+
+  rm -f "$KUBECONFIG"
+
+fi
+
+
+echo "|=============================|"
+
+date
+
+# Trap any calls to exit and errors caught by the -e flag
+trap '{ echo "Killed by a signal"; ERROR ; }' 1 2 3 4 5 6 7 8 10 12 13 15
+
+#This is the end
+
+ecflow_client --complete  # Notify ecFlow of a normal end
+
+trap 0                    # Remove all traps
+exit 0                    # End the shell
+
