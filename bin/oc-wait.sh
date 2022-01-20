@@ -8,7 +8,6 @@ shift
 
 rest=$*
 
-export PATH=/home/users/ecflow/bin/:$PATH
 # wait for completion as background process - capture PID
 oc wait --for=condition=complete job/$job $rest &
 completion_pid=$!

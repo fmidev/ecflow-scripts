@@ -108,7 +108,7 @@ start_oc() {
   fi
 
   set +e
-  /ecflow/bin/oc-wait.sh $job --timeout=1200s
+  oc-wait.sh $job --timeout=1200s
   ret=$?
   set -e  
 
@@ -139,7 +139,11 @@ else
 
   export KUBECONFIG=$(kubeprompt -t)
 
-  if [ -n "$OPENSHIFT_TOKEN" ]; then
+  if [ -f $HOME/.openshift-token ]; then
+    . $HOME/.openshift-token
+  fi
+
+  if [ -z "$OPENSHIFT_TOKEN" ]; then
     echo "openshift token missing (env variable OPENSHIFT_TOKEN)"
     exit 1
   fi
