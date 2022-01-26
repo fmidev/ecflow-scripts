@@ -25,7 +25,7 @@ def parse_command_line():
     parser.add_argument("--version", action='store', type=int, default=1)
     parser.add_argument("--status","-s", action='store', type=str, required=True)
     parser.add_argument("--status_time","-t", action='store', type=valid_time, default=datetime.datetime.now())
-    parser.add_argument("--geometry_id", action='store', default=None)
+    parser.add_argument("--geometry_id", action='store', nargs='+', default=None)
     parser.add_argument("--host", action="store", type=str, default="radondb.fmi.fi", help="Database hostname")
     parser.add_argument("--port", action="store", type=int, default=5432, help="Database port")
     parser.add_argument("--database", action="store", type=str, default="radon", help="Database name")
@@ -37,25 +37,34 @@ def parse_command_line():
 
     if args.status not in allowed_statuses:
         raise Exception('{} is not one of allowed statuses: {}'.format(args.status, allowed_statuses))
+
+    args.geometry_id = list(map(lambda x : None if x == 'None' else int(x), args.geometry_id))
+
     return args
+
+
+def insert_to_table(args, cur, values):
+
+    query = 'INSERT INTO ss_forecast_status (producer_id, analysis_time, geometry_id, version, status, status_time) VALUES (%s, %s, %s, %s, %s, %s)'
+
+    try:
+        cur.execute(query, values)
+    except psycopg2.IntegrityError as e:
+        print(e)
+        print("Use a different version than '{}' if this is a second run of the forecast, or specify geometry id".format(args.version))
+        sys.exit(1)
+    except psycopg2.InternalError as e:
+        print(e)
+        sys.exit(1)
+
+    print("Inserted: producer {} analysis time {} geometry id {} version {} status {} status time {}".format(*values))
 
 
 def update_ss_status(args, conn):
     cur = conn.cursor()
-    query = 'INSERT INTO ss_forecast_status (producer_id, analysis_time, geometry_id, version, status, status_time) VALUES (%s, %s, %s, %s, %s, %s)'
 
-    try:
-        cur.execute(query, (args.producer_id, args.analysis_time, args.geometry_id, args.version, args.status, args.status_time))
-    except psycopg2.IntegrityError as e:
-        print(e)
-        print("Use a different version than '{}' if this is a second run of the forecast".format(args.version))
-        sys.exit(1)
-    except psycopg2.InternalError as e:
-        print(e)
-        print("Use a different version than '{}' if this is a second run of the forecast, or specify geometry id".format(args.version))
-        sys.exit(1)
-
-    print("Inserted status '{}' for producer {} analysis time {} geometry {} version {}".format(args.status, args.producer_id, args.analysis_time, args.geometry_id, args.version))
+    for geom_id in args.geometry_id:
+        insert_to_table(args, cur, (args.producer_id, args.analysis_time, geom_id, args.version, args.status, args.status_time))
 
 
 def connect(args):
