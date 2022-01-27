@@ -20,7 +20,7 @@ def parse_command_line():
             raise argparse.ArgumentTypeError(e)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--producer_id","-r", action='store', type=int, required=True)
+    parser.add_argument("--producer_id","-r", action='store', type=int, nargs='+', required=True)
     parser.add_argument("--analysis_time","-a", action='store', type=valid_time, required=True)
     parser.add_argument("--version", action='store', type=int, default=1)
     parser.add_argument("--status","-s", action='store', type=str, required=True)
@@ -63,8 +63,9 @@ def insert_to_table(args, cur, values):
 def update_ss_status(args, conn):
     cur = conn.cursor()
 
-    for geom_id in args.geometry_id:
-        insert_to_table(args, cur, (args.producer_id, args.analysis_time, geom_id, args.version, args.status, args.status_time))
+    for prod_id in args.producer_id:
+        for geom_id in args.geometry_id:
+            insert_to_table(args, cur, (prod_id, args.analysis_time, geom_id, args.version, args.status, args.status_time))
 
 
 def connect(args):
