@@ -2,7 +2,7 @@
 
 %define PACKAGENAME ecflow-scripts
 Name:           %{PACKAGENAME}
-Version:        22.1.27
+Version:        22.2.21
 Release:        1%{dist}.fmi
 Summary:        Helper scripts needed for ecFlow production
 Group:          Applications/System

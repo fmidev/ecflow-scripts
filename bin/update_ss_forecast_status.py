@@ -21,7 +21,8 @@ def parse_command_line():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--producer_id","-r", action='store', type=int, nargs='+', required=True)
-    parser.add_argument("--analysis_time","-a", action='store', type=valid_time, required=True)
+    parser.add_argument("--analysis_time","-a", action='store', type=valid_time)
+    parser.add_argument("--latest_from_database", action='store_true')
     parser.add_argument("--version", action='store', type=int, default=1)
     parser.add_argument("--status","-s", action='store', type=str, required=True)
     parser.add_argument("--status_time","-t", action='store', type=valid_time, default=datetime.datetime.now())
@@ -38,12 +39,40 @@ def parse_command_line():
     if args.status not in allowed_statuses:
         raise Exception('{} is not one of allowed statuses: {}'.format(args.status, allowed_statuses))
 
-    args.geometry_id = list(map(lambda x : None if x == 'None' else int(x), args.geometry_id))
+    if args.geometry_id is not None:
+        args.geometry_id = list(map(lambda x : None if x == 'None' else int(x), args.geometry_id))
+    else:
+        args.geometry_id = [None]
+
+    if args.analysis_time is None and args.latest_from_database is False:
+        raise Exception('Either --analysis_time or --latest_from_database needs to be defined')
 
     return args
 
 
+def get_latest_analysis_time_from_database(cur, producer_id, geometry_id):
+    qargs = (producer_id, )
+
+    query = 'SELECT max(analysis_time) FROM as_grid WHERE record_count = 1 AND producer_id = %s'
+
+    if geometry_id is not None:
+       query += 'AND geometry_id = %s'
+       qargs.append(geometry_id)
+
+    cur.execute(query, qargs)
+
+    rows = cur.fetchone()
+
+    if rows[0] is None:
+        raise Exception('Latest analysis time not found for producer_id={} geometry_id={}'.format(producer_id, geometry_id))
+
+    return rows[0]
+
+
 def insert_to_table(args, cur, values):
+
+    if args.latest_from_database:
+       values[1] = get_latest_analysis_time_from_database(cur, values[0], values[2])
 
     query = 'INSERT INTO ss_forecast_status (producer_id, analysis_time, geometry_id, version, status, status_time) VALUES (%s, %s, %s, %s, %s, %s)'
 
@@ -65,7 +94,7 @@ def update_ss_status(args, conn):
 
     for prod_id in args.producer_id:
         for geom_id in args.geometry_id:
-            insert_to_table(args, cur, (prod_id, args.analysis_time, geom_id, args.version, args.status, args.status_time))
+            insert_to_table(args, cur, [prod_id, args.analysis_time, geom_id, args.version, args.status, args.status_time])
 
 
 def connect(args):
