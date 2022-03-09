@@ -57,7 +57,7 @@ def get_latest_analysis_time_from_database(cur, producer_id, geometry_id):
 
     if geometry_id is not None:
        query += 'AND geometry_id = %s'
-       qargs.append(geometry_id)
+       qargs += (geometry_id,)
 
     cur.execute(query, qargs)
 
