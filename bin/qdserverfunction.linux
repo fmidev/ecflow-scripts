@@ -139,16 +139,26 @@ else
 
   export KUBECONFIG=$(kubeprompt -t)
 
-  if [ -f $HOME/.openshift-token ]; then
-    . $HOME/.openshift-token
+  oc_env_file=%OC_ENV_FILE:"$HOME/.openshift-token"%
+
+  if [ -f $oc_env_file ]; then
+    . $oc_env_file
   fi
+
+  set +u
 
   if [ -z "$OPENSHIFT_TOKEN" ]; then
     echo "openshift token missing (env variable OPENSHIFT_TOKEN)"
     exit 1
   fi
 
-  oc login -n huruakka --token $OPENSHIFT_TOKEN https://api.ocd.fmi.fi:6443
+  if [ -z "$OPENSHIFT_HOST" ]; then
+    echo "openshift hostname missing (env variable OPENSHIFT_HOST)"
+    exit 1
+  fi
+
+  set -u
+  oc login -n huruakka --token $OPENSHIFT_TOKEN $OPENSHIFT_HOST
 
   set -x
 
