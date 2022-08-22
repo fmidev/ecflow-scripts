@@ -125,13 +125,13 @@ start_oc() {
 
 }
 
+sh remoterun.cluster.exec fmi_prod $cluster /huruakka/bin/storetime.sh $pathname %TASK% start %ECF_DATE% %FAMILY1%
+
 if [ $use_oc -eq 0 ]; then
 
   # start runs in 'old' huruakka cluster, the one with physical machines
 
-  sh remoterun.cluster.exec fmi_prod $cluster /huruakka/bin/storetime.sh $pathname %TASK% start %ECF_DATE% %FAMILY1%
   sh remoterun.cluster.exec fmi_prod $cluster $use_pgcldb ORACLE_CURSOR_SHARING=Y qdserver.sh -q $postproc -m "$filenamemask" $pathname
-  sh remoterun.cluster.exec fmi_prod $cluster /huruakka/bin/storetime.sh $pathname %TASK% stop %ECF_DATE% %FAMILY1%
 
 else
 
@@ -168,6 +168,7 @@ else
 
 fi
 
+sh remoterun.cluster.exec fmi_prod $cluster /huruakka/bin/storetime.sh $pathname %TASK% stop %ECF_DATE% %FAMILY1%
 
 echo "|=============================|"
 
