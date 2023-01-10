@@ -125,7 +125,13 @@ start_oc() {
 
 }
 
-sh remoterun.cluster.exec fmi_prod $cluster /huruakka/bin/storetime.sh $pathname %TASK% start %ECF_DATE% %FAMILY1%
+infradb_env_file=%INFRADB_ENV_FILE:"$HOME/.infradb-env"%
+
+if [ -f $infradb_env_file ]; then
+  . $infradb_env_file
+fi
+
+huruakka_storetime.sh $pathname %TASK% start %ECF_DATE% %FAMILY1%
 
 if [ $use_oc -eq 0 ]; then
 
@@ -138,6 +144,8 @@ else
   # start runs in openshift
 
   export KUBECONFIG=$(kubeprompt -t)
+
+  # Read openshift credentials
 
   oc_env_file=%OC_ENV_FILE:"$HOME/.openshift-token"%
 
@@ -168,7 +176,7 @@ else
 
 fi
 
-sh remoterun.cluster.exec fmi_prod $cluster /huruakka/bin/storetime.sh $pathname %TASK% stop %ECF_DATE% %FAMILY1%
+hururakka_storetime.sh $pathname %TASK% stop %ECF_DATE% %FAMILY1%
 
 echo "|=============================|"
 

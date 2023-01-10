@@ -2,7 +2,7 @@
 
 %define PACKAGENAME ecflow-scripts
 Name:           %{PACKAGENAME}
-Version:        22.8.22
+Version:        23.1.10
 Release:        1%{dist}.fmi
 Summary:        Helper scripts needed for ecFlow production
 Group:          Applications/System
@@ -15,6 +15,7 @@ Requires:	openshift-origin-client-tools
 Requires:	bash
 Requires:	coreutils
 Requires:	python3-psycopg2
+Requires:	postgresql14
 
 %if %{defined el8}
 Requires:	python3-pytz
@@ -27,13 +28,14 @@ Provides:	qdserverfunction.linux
 Provides:	remoterun.cluster
 Provides:	remoterun.cluster.cluster
 Provides:	update_ss_forecast_status.py
+Provides:	huruakka_storetime.sh
 
 AutoReqProv: no
 
 %global debug_package %{nil}
 
 %description
-A collection of small but important scripts that keeps the
+A collection of small but important scripts that keep the
 good ol' wheels of production running.
 
 %prep
@@ -48,6 +50,7 @@ cp -a bin/oc-wait.sh %{buildroot}/%{_bindir}/
 cp -a bin/qdserverfunction.linux %{buildroot}/%{_bindir}/
 cp -a bin/remoterun.cluster* %{buildroot}/%{_bindir}/
 cp -a bin/update_ss_forecast_status.py %{buildroot}/%{_bindir}/
+cp -a bin/huruakka_storetime.sh %{buildroot}/%{_bindir}/
 
 %clean
 rm -rf %{buildroot}
@@ -57,6 +60,8 @@ rm -rf %{buildroot}
 %{_bindir}/*
 
 %changelog
+* Tue Jan 10 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.1.10-1.fmi
+- Add huruakka_storetime.sh
 * Thu Mar 31 2022 Mikko Aalto <mikko.aalto@fmi.fi> - 22.3.31-1.fmi
 - Increase oc-wait timeout
 * Thu Jan 20 2022 Mikko Partio <mikko.partio@fmi.fi> - 22.1.20-1.fmi
