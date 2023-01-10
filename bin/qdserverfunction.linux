@@ -176,7 +176,7 @@ else
 
 fi
 
-hururakka_storetime.sh $pathname %TASK% stop %ECF_DATE% %FAMILY1%
+huruakka_storetime.sh $pathname %TASK% stop %ECF_DATE% %FAMILY1%
 
 echo "|=============================|"
 
