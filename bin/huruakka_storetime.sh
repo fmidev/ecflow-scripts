@@ -29,7 +29,7 @@ fcdate=$4
 # analysis time, if applicable
 atime=$5
 
-time=$(date +%Y%m%d%H%M%S)
+time=$(date +%Y%m%d%H%M%S%z)
 hour=$(date +%H)
 
 sql=""
@@ -60,13 +60,13 @@ if [ $is_forecast -eq 1 ]; then
 		fcdate=$(date +%Y%m%d -d '-1 day')
 	fi
 
-	sql="INSERT INTO fctimes (fcdate, fcatime, pathname, task, operation, datetime) VALUES (to_date('$fcdate', 'yyyymmdd'), $atime, '$pathname','$task','$operation',to_timestamp('$time', 'yyyymmddHH24MISS'))"
+	sql="INSERT INTO fctimes (fcdate, fcatime, pathname, task, operation, datetime) VALUES (to_date('$fcdate', 'yyyymmdd'), $atime, '$pathname','$task','$operation',to_timestamp('$time', 'yyyymmddHH24MISSTZHTZM'))"
 
 else
 	# For observations we have to generate a unique identifier for each operation
 	# In forecasts this is done by fdate and fcatime
 
-	sql="INSERT INTO obstimes (pathname, task, operation, datetime) VALUES ('$pathname','$task','$operation',to_timestamp('$time', 'yyyymmddHH24MISS'))"
+	sql="INSERT INTO obstimes (pathname, task, operation, datetime) VALUES ('$pathname','$task','$operation',to_timestamp('$time', 'yyyymmddHH24MISSTZHTZM'))"
 fi
 
 echo $sql | PGPASSWORD=$pass psql -h $host -p $port -d $dbname -U $user > /dev/null 2>&1
