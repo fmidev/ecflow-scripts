@@ -2,7 +2,7 @@
 
 %define PACKAGENAME ecflow-scripts
 Name:           %{PACKAGENAME}
-Version:        23.1.11
+Version:        23.1.12
 Release:        1%{dist}.fmi
 Summary:        Helper scripts needed for ecFlow production
 Group:          Applications/System
@@ -60,7 +60,9 @@ rm -rf %{buildroot}
 %{_bindir}/*
 
 %changelog
-* Tue Jan 10 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.1.11-1.fmi
+* Thu Jan 12 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.1.12-1.fmi
+- Allow oc wait to be specified with a ecflow variable
+* Wed Jan 11 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.1.11-1.fmi
 - Minor change to huruakka_storetime.sh
 * Tue Jan 10 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.1.10-1.fmi
 - Add huruakka_storetime.sh

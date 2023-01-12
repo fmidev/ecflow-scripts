@@ -107,8 +107,9 @@ start_oc() {
     exit 1
   fi
 
+  oc_wait_timeout=%OC_WAIT_TIMEOUT:3600%
   set +e
-  oc-wait.sh $job --timeout=3600s
+  oc-wait.sh $job --timeout=$oc_wait_timeouts
   ret=$?
   set -e  
 
