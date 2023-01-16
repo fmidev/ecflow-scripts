@@ -82,15 +82,20 @@ start_oc() {
   elif [ "$use_pgcldb" = "USE_PGCLDB=1" ]; then
     use_pgcldb=1
   fi
- 
-  ocpathname=${pathname//\//-} # to dashes
-  uspathname="${ocpathname//_}" # remove underscore
 
-  # a valid label must be an empty string or consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyValue',  or 'my_value',  or '12345')
+  # change forward slashes to dashes
+  ocpathname=${pathname//\//-}
+  # remove underscore (not a valid character)
+  ocpathname="${ocpathname//_}"
+
+  # add task name because a family might have multiple get-tasks
+  ocpathname="${ocpathname}-%TASK%"
+
+  # a valid label must be an empty string or consist of alphanumeric characters, '-', '_' or '.',
+  # and must start and end with an alphanumeric character (e.g. 'MyValue',  or 'my_value',  or '12345')
   # openshift only allows 63 characters
-  lcpathname=$(echo $uspathname | tr '[:upper:]' '[:lower:]' | tr -d '.' | head -c 63 | sed 's/[-_]$//')
 
-  job=$(echo "$lcpathname-$postproc" | tr -d '.' | head -c 63 | sed 's/[_-]$//')
+  job=$(echo $ocpathname | sed 's/_/-/g' | tr '[:upper:]' '[:lower:]' | tr -d '.' | head -c 63 | sed 's/[-_]$//')
 
   oc delete --ignore-not-found=true job/$job
   oc process -p RUN_IDENTIFIER=$job \
@@ -98,7 +103,6 @@ start_oc() {
 	-p FILENAMEMASK=$filenamemask \
  	-p PATHNAME=$pathname \
 	-p VERSION=prod \
-        -p QUERYBASE_IDENTIFIER=$lcpathname \
         -p USE_PGCLDB=$use_pgcldb \
 	qdservertask-template | oc create -f -
   
