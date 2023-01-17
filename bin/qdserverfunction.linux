@@ -71,7 +71,7 @@ fi
 cluster="%cluster:huruakka%"
 
 use_pgcldb=%UsePG:USE_CLDB=1%
-use_oc=%USE_OC:0%
+use_oc=%USE_OC:1%
 
 echo "$(date +'%%Y-%%m-%%d %%H:%%M:%%S') USE_OC=$use_oc $pathname $postproc" >> /tmp/qdserverfunction-use_oc.log
 
