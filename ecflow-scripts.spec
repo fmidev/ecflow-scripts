@@ -2,7 +2,7 @@
 
 %define PACKAGENAME ecflow-scripts
 Name:           %{PACKAGENAME}
-Version:        23.1.16
+Version:        23.2.9
 Release:        1%{dist}.fmi
 Summary:        Helper scripts needed for ecFlow production
 Group:          Applications/System
@@ -60,6 +60,8 @@ rm -rf %{buildroot}
 %{_bindir}/*
 
 %changelog
+* Thu Feb 19 2023 Mikko Aalto <mikko.aalto@fmi.fi> - 23.2.9-1.fmi
+- qdserverfunction.linux changes
 * Mon Jan 16 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.1.16-1.fmi
 - Change to qdserverfunction.linux oc jobname
 * Thu Jan 12 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.1.12-1.fmi
