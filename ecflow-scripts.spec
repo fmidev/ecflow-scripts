@@ -29,6 +29,8 @@ Provides:	remoterun.cluster
 Provides:	remoterun.cluster.cluster
 Provides:	update_ss_forecast_status.py
 Provides:	huruakka_storetime.sh
+Provides:	tail.h
+Provides:	head.h
 
 AutoReqProv: no
 
@@ -46,22 +48,35 @@ good ol' wheels of production running.
 %install
 rm -rf $RPM_BUILD_ROOT
 mkdir -p %{buildroot}/%{_bindir}
+mkdir -p %{buildroot}/etc/ecflow5
 cp -a bin/oc-wait.sh %{buildroot}/%{_bindir}/
 cp -a bin/qdserverfunction.linux %{buildroot}/%{_bindir}/
 cp -a bin/remoterun.cluster* %{buildroot}/%{_bindir}/
 cp -a bin/update_ss_forecast_status.py %{buildroot}/%{_bindir}/
 cp -a bin/huruakka_storetime.sh %{buildroot}/%{_bindir}/
+cp -a etc/tail.h %{buildroot}/etc/ecflow5/
+cp -a etc/head.h %{buildroot}/etc/ecflow5/
 
 %clean
 rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,0755)
-%{_bindir}/*
+%{_bindir}/oc-wait.sh
+%{_bindir}/qdserverfunction.linux
+%{_bindir}/remoterun.cluster
+%{_bindir}/remoterun.cluster.exec
+%{_bindir}/update_ss_forecast_status.py
+%{_bindir}/huruakka_storetime.sh
+/etc/ecflow5/*.h
 
 %changelog
 * Thu Feb 16 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.2.16-1.fmi
 - Set USE_OC=1 by default
+* Mon Feb 13 2023 Mikko Aalto <mikko.aalto@fmi.fi> - 23.2.13-1.fmi
+- Add head.h and tail.h
+* Thu Feb 9 2023 Mikko Aalto <mikko.aalto@fmi.fi> - 23.2.9-1.fmi
+- Changes to qdserverfunction.linux
 * Mon Jan 16 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.1.16-1.fmi
 - Change to qdserverfunction.linux oc jobname
 * Thu Jan 12 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.1.12-1.fmi
