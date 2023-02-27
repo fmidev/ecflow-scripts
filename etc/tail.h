@@ -1,4 +1,4 @@
-ate
+date
 PATH="/usr/ecflow5/bin:/usr/local/ecflow5/bin:$PATH"
 TASK_DURATION=$(($(date +%%s) - $TASK_START_TIME))
 
