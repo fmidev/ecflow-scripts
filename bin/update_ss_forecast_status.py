@@ -56,7 +56,7 @@ def get_latest_analysis_time_from_database(cur, producer_id, geometry_id):
     query = 'SELECT max(analysis_time) FROM as_grid WHERE record_count = 1 AND producer_id = %s'
 
     if geometry_id is not None:
-       query += 'AND geometry_id = %s'
+       query += ' AND geometry_id = %s'
        qargs += (geometry_id,)
 
     cur.execute(query, qargs)

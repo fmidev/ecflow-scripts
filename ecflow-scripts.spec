@@ -2,7 +2,7 @@
 
 %define PACKAGENAME ecflow-scripts
 Name:           %{PACKAGENAME}
-Version:        23.2.16
+Version:        23.3.22
 Release:        1%{dist}.fmi
 Summary:        Helper scripts needed for ecFlow production
 Group:          Applications/System
@@ -56,9 +56,21 @@ cp -a bin/update_ss_forecast_status.py %{buildroot}/%{_bindir}/
 cp -a bin/huruakka_storetime.sh %{buildroot}/%{_bindir}/
 cp -a etc/tail.h %{buildroot}/etc/ecflow5/
 cp -a etc/head.h %{buildroot}/etc/ecflow5/
+mkdir -p %{buildroot}/%{_prefix}/lib/systemd/system
+install -p -m 644 etc/ecflow-http.service %{buildroot}/%{_prefix}/lib/systemd/system
 
 %clean
 rm -rf %{buildroot}
+
+%post
+/usr/bin/systemctl enable ecflow-http
+/usr/bin/systemctl start ecflow-http
+/usr/bin/systemctl daemon-reload
+
+%preun
+/usr/bin/systemctl stop ecflow-http
+/usr/bin/systemctl disable ecflow-http
+/usr/bin/systemctl daemon-reload
 
 %files
 %defattr(-,root,root,0755)
@@ -68,9 +80,14 @@ rm -rf %{buildroot}
 %{_bindir}/remoterun.cluster.exec
 %{_bindir}/update_ss_forecast_status.py
 %{_bindir}/huruakka_storetime.sh
-/etc/ecflow5/*.h
+%{_sysconfdir}/ecflow5/*.h
+%{_prefix}/lib/systemd/system/ecflow-http.service
 
 %changelog
+* Wed Mar 22 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.3.22-1.fmi
+- Bugfix for update_ss_forecast_status.py
+* Wed Feb 22 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.2.22-1.fmi
+- Create systemd service file for ecflow http
 * Thu Feb 16 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.2.16-1.fmi
 - Set USE_OC=1 by default
 * Mon Feb 13 2023 Mikko Aalto <mikko.aalto@fmi.fi> - 23.2.13-1.fmi
