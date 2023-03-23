@@ -2,7 +2,7 @@
 
 %define PACKAGENAME ecflow-scripts
 Name:           %{PACKAGENAME}
-Version:        23.3.22
+Version:        23.3.23
 Release:        1%{dist}.fmi
 Summary:        Helper scripts needed for ecFlow production
 Group:          Applications/System
@@ -63,13 +63,13 @@ install -p -m 644 etc/ecflow-http.service %{buildroot}/%{_prefix}/lib/systemd/sy
 rm -rf %{buildroot}
 
 %post
-/usr/bin/systemctl enable ecflow-http
-/usr/bin/systemctl start ecflow-http
+# /usr/bin/systemctl enable ecflow-http
+# /usr/bin/systemctl start ecflow-http
 /usr/bin/systemctl daemon-reload
 
 %preun
-/usr/bin/systemctl stop ecflow-http
-/usr/bin/systemctl disable ecflow-http
+# /usr/bin/systemctl stop ecflow-http
+# /usr/bin/systemctl disable ecflow-http
 /usr/bin/systemctl daemon-reload
 
 %files
@@ -84,6 +84,8 @@ rm -rf %{buildroot}
 %{_prefix}/lib/systemd/system/ecflow-http.service
 
 %changelog
+* Thu Mar 23 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.3.23-1.fmi
+- Fix typo in systemd service file
 * Wed Mar 22 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.3.22-1.fmi
 - Bugfix for update_ss_forecast_status.py
 * Wed Feb 22 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.2.22-1.fmi
