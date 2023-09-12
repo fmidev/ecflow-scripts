@@ -12,6 +12,7 @@ Source0: 	%{name}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:       python3
 Requires:	openshift-origin-client-tools
+Requires:	kubeprompt
 Requires:	bash
 Requires:	coreutils
 Requires:	python3-psycopg2
