@@ -2,7 +2,7 @@
 
 %define PACKAGENAME ecflow-scripts
 Name:           %{PACKAGENAME}
-Version:        23.3.23
+Version:        24.10.16
 Release:        1%{dist}.fmi
 Summary:        Helper scripts needed for ecFlow production
 Group:          Applications/System
@@ -57,21 +57,9 @@ cp -a bin/update_ss_forecast_status.py %{buildroot}/%{_bindir}/
 cp -a bin/huruakka_storetime.sh %{buildroot}/%{_bindir}/
 cp -a etc/tail.h %{buildroot}/etc/ecflow5/
 cp -a etc/head.h %{buildroot}/etc/ecflow5/
-mkdir -p %{buildroot}/%{_prefix}/lib/systemd/system
-install -p -m 644 etc/ecflow-http.service %{buildroot}/%{_prefix}/lib/systemd/system
 
 %clean
 rm -rf %{buildroot}
-
-%post
-# /usr/bin/systemctl enable ecflow-http
-# /usr/bin/systemctl start ecflow-http
-/usr/bin/systemctl daemon-reload
-
-%preun
-# /usr/bin/systemctl stop ecflow-http
-# /usr/bin/systemctl disable ecflow-http
-/usr/bin/systemctl daemon-reload
 
 %files
 %defattr(-,root,root,0755)
@@ -82,9 +70,10 @@ rm -rf %{buildroot}
 %{_bindir}/update_ss_forecast_status.py
 %{_bindir}/huruakka_storetime.sh
 %{_sysconfdir}/ecflow5/*.h
-%{_prefix}/lib/systemd/system/ecflow-http.service
 
 %changelog
+* Wed Oct 16 2024 Mikko Partio <mikko.partio@fmi.fi> - 24.10.16-1.fmi
+- Remove systemd service file which is now a part of ecflow5-http package
 * Thu Mar 23 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.3.23-1.fmi
 - Fix typo in systemd service file
 * Wed Mar 22 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.3.22-1.fmi
