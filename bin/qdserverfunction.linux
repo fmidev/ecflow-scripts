@@ -58,7 +58,7 @@ start_oc() {
 	-p POSTPROC=$postproc \
 	-p FILENAMEMASK=$filenamemask \
  	-p PATHNAME=$pathname \
-	-p VERSION=prod \
+	-p VERSION=%VERSION:prod% \
         -p USE_PGCLDB=$use_pgcldb \
 	qdservertask-template | oc create -f -
   
