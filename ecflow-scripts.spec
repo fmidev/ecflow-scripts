@@ -3,7 +3,7 @@
 %define PACKAGENAME ecflow-scripts
 Name:           %{PACKAGENAME}
 Version:        24.10.17
-Release:        1%{dist}.fmi
+Release:        2%{dist}.fmi
 Summary:        Helper scripts needed for ecFlow production
 Group:          Applications/System
 License:        MIT
@@ -73,6 +73,8 @@ rm -rf %{buildroot}
 %{_sysconfdir}/ecflow5/*.h
 
 %changelog
+* Thu Oct 17 2024 Arto Keskinen <arto.keskinen@fmi.fi> - 24.10.17-2.fmi
+- Update qdserverfunction.linux
 * Thu Oct 17 2024 Mikko Partio <mikko.partio@fmi.fi> - 24.10.17-1.fmi
 - Add dependency to procps package
 * Wed Oct 16 2024 Mikko Partio <mikko.partio@fmi.fi> - 24.10.16-1.fmi
