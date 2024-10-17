@@ -2,7 +2,7 @@
 
 %define PACKAGENAME ecflow-scripts
 Name:           %{PACKAGENAME}
-Version:        24.10.16
+Version:        24.10.17
 Release:        1%{dist}.fmi
 Summary:        Helper scripts needed for ecFlow production
 Group:          Applications/System
@@ -17,6 +17,7 @@ Requires:	bash
 Requires:	coreutils
 Requires:	python3-psycopg2
 Requires:	postgresql14
+Requires:	procps
 
 %if %{defined el8}
 Requires:	python3-pytz
@@ -72,6 +73,8 @@ rm -rf %{buildroot}
 %{_sysconfdir}/ecflow5/*.h
 
 %changelog
+* Thu Oct 17 2024 Mikko Partio <mikko.partio@fmi.fi> - 24.10.17-1.fmi
+- Add dependency to procps package
 * Wed Oct 16 2024 Mikko Partio <mikko.partio@fmi.fi> - 24.10.16-1.fmi
 - Remove systemd service file which is now a part of ecflow5-http package
 * Thu Mar 23 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.3.23-1.fmi
