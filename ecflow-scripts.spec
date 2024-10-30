@@ -3,7 +3,7 @@
 %define PACKAGENAME ecflow-scripts
 Name:           %{PACKAGENAME}
 Version:        24.10.30
-Release:        1%{dist}.fmi
+Release:        2%{dist}.fmi
 Summary:        Helper scripts needed for ecFlow production
 Group:          Applications/System
 License:        MIT
@@ -73,6 +73,8 @@ rm -rf %{buildroot}
 %{_sysconfdir}/ecflow5/*.h
 
 %changelog
+* Wed Oct 30 2024 Arto Keskinen <arto.keskinen@fmi.fi> - 24.10.30-2.fmi
+- Don't echo secrets to stdout part.2
 * Wed Oct 30 2024 Arto Keskinen <arto.keskinen@fmi.fi> - 24.10.30-1.fmi
 - Update qdserverfunctionlinux: don't echo env-file secrets to stdout
 * Thu Oct 17 2024 Arto Keskinen <arto.keskinen@fmi.fi> - 24.10.17-2.fmi

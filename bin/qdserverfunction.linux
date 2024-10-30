@@ -118,21 +118,21 @@ else
     set -x
   fi
 
-  set +u
-
+  set +ux
   if [ -z "$OPENSHIFT_TOKEN" ]; then
     echo "openshift token missing (env variable OPENSHIFT_TOKEN)"
     exit 1
   fi
+  set -x
 
   if [ -z "$OPENSHIFT_HOST" ]; then
     echo "openshift hostname missing (env variable OPENSHIFT_HOST)"
     exit 1
   fi
-
   set -u
-  oc login -n huruakka --token $OPENSHIFT_TOKEN $OPENSHIFT_HOST
 
+  set +x
+  oc login -n huruakka --token $OPENSHIFT_TOKEN $OPENSHIFT_HOST
   set -x
 
   start_oc
