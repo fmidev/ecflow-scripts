@@ -89,7 +89,9 @@ start_oc() {
 infradb_env_file=%INFRADB_ENV_FILE:"$HOME/.infradb-env"%
 
 if [ -f $infradb_env_file ]; then
+  set +x
   . $infradb_env_file
+  set -x
 fi
 
 huruakka_storetime.sh $pathname %TASK% start %ECF_DATE% %FAMILY1%
@@ -111,7 +113,9 @@ else
   oc_env_file=%OC_ENV_FILE:"$HOME/.openshift-token"%
 
   if [ -f $oc_env_file ]; then
+    set +x
     . $oc_env_file
+    set -x
   fi
 
   set +u
