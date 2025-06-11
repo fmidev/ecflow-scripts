@@ -2,8 +2,8 @@
 
 %define PACKAGENAME ecflow-scripts
 Name:           %{PACKAGENAME}
-Version:        24.10.30
-Release:        2%{dist}.fmi
+Version:        25.6.11
+Release:        1%{dist}.fmi
 Summary:        Helper scripts needed for ecFlow production
 Group:          Applications/System
 License:        MIT
@@ -73,6 +73,8 @@ rm -rf %{buildroot}
 %{_sysconfdir}/ecflow5/*.h
 
 %changelog
+* Wed Jun 11 2025 Arto Keskinen <arto.keskinen@fmi.fi> - 25.6.11-1.fmi
+- Bugfix for oc-wait.sh: exit with failure if timeout is reached
 * Wed Oct 30 2024 Arto Keskinen <arto.keskinen@fmi.fi> - 24.10.30-2.fmi
 - Don't echo secrets to stdout part.2
 * Wed Oct 30 2024 Arto Keskinen <arto.keskinen@fmi.fi> - 24.10.30-1.fmi
